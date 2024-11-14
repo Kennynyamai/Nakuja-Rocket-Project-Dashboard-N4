@@ -1,0 +1,9 @@
+/* Add Tailwind CSS base styles */
+@tailwind base;
+
+/* Add Tailwind CSS component styles */
+@tailwind components;
+
+/* Add Tailwind CSS utility styles */
+@tailwind utilities;
+
