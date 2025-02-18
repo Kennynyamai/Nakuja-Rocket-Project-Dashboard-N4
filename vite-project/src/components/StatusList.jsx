@@ -1,24 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { SensorContext } from '../context/SensorContext';
+import mqtt from 'mqtt';
 import nakujaLogo from '../assets/nakujaLogo.png';
 
-//left panel component
 const StatusList = () => {
-  const [rocketStatus, setRocketStatus] = useState("Preflight"); // Initial status
+   const { sensorData, setSensorData } = useContext(SensorContext);
 
-  const statuses = [
-    { name: "Velocity = 0", status: "Awaiting" },
-    { name: "Pitch/Yaw > 65", status: "Awaiting" },
+   const [statuses, setStatuses] = useState([
     { name: "Acceleration", status: "Awaiting" },
-    { name: "Altitude", status: "Achieved" },
-  ];
+    { name: "Yaw > 60", status: "Awaiting" },
+    { name: "roll > 60", status: "Awaiting" },
+  ]);
+
+  // Update statuses when flightstate changes
+  useEffect(() => {
+    if (sensorData.flightstate === 2) {
+      setStatuses((prevStatuses) =>
+        prevStatuses.map((item) => ({
+          ...item,
+          status: "Achieved", // Update status to "Achieved" if flightstate is 3
+        }))
+      );
+    } else {
+      setStatuses((prevStatuses) =>
+        prevStatuses.map((item) => ({
+          ...item,
+          status: "Awaiting", // Revert status to "Awaiting" for other states
+        }))
+      );
+    }
+  }, [sensorData.flightstate]);
+
+
 
   // Map statuses to background colors
   const statusColors = {
-    Preflight: "bg-green-500",
-    "Apogee Detected": "bg-yellow-500",
-    "Main Chute Deployed": "bg-orange-500",
-    "Landing Achieved": "bg-blue-500",
+    "Preflight": "bg-green-500",
+    "Powered Flight": "bg-yellow-500",
+    "Apogee": "bg-orange-500",
+    "Drogue descent": "bg-blue-500",
+    "Main descent": "bg-purple-500",
+    "Postflight": "bg-red-500",
   };
+
+  // Map rocket status number to phase name
+  const statusMapping = {
+    0: "Preflight",
+    1: "Powered Flight",
+    2: "Apogee",
+    3: "Drogue descent",
+    4: "Main descent",
+    5: "Postflight",
+  };
+
+  // Get the corresponding phase based on the rocketStatus number
+  const currentStatus = statusMapping[sensorData.flightstate] || "Unknown Status";
+
+  // Determine the background color based on the current phase
+  const currentStatusColor = statusColors[currentStatus] || "bg-gray-500";
 
   return (
     <div className="bg-gray-800 p-4 rounded-lg space-y-4">
@@ -33,16 +72,13 @@ const StatusList = () => {
         </div>
       ))}
 
-      {/* Status Box */}
-      <div className={`p-4 rounded-lg text-center text-white shadow-lg mt-4 ${statusColors[rocketStatus] || "bg-gray-500"}`}>
-        <div className="text-xl font-bold">{rocketStatus}</div>
+      {/* Rocket Status Box */}
+      <div className={`p-4 rounded-lg text-center text-white shadow-lg mt-4 ${currentStatusColor}`}>
+        <div className="text-xl font-bold">{currentStatus}</div>
         <div className="text-sm text-gray-200">Rocket Status</div>
       </div>
-
-    
-     
     </div>
   );
-};
+}
 
 export default StatusList;
