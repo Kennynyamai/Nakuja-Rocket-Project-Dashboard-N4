@@ -5,7 +5,108 @@ import nakujaLogo from '../assets/nakujaLogo.png';
 
 const StatusList = () => {
    const { sensorData, setSensorData } = useContext(SensorContext);
+   const [isDemoRunning, setIsDemoRunning] = useState(false);
 
+    // Function to start the demo
+    const startDemo = () => {
+      setIsDemoRunning(true);
+      let flightState = 0;
+      let altitude = 0;
+      let verticalVelocity = 0;
+      let acceleration = 0;
+      let roll = 0;
+      let yaw = 0;
+      let time = 0;
+    
+      const maxAltitude = 500;
+    
+      const interval = setInterval(() => {
+        time++; // Increment time every second
+    
+        // Update sensor data based on the current flight state
+        switch (flightState) {
+          case 0: // Preflight (5 seconds)
+            acceleration += 5;  // Gradual increase in acceleration
+            if (time === 5) {
+              flightState = 1; // Transition to Powered Flight
+            }
+            break;
+    
+          case 1: // Powered Flight (15 seconds)
+            acceleration = 30; // Constant acceleration
+            verticalVelocity += 40; // Increase vertical velocity more gradually
+            altitude += verticalVelocity * 0.1; // Simulate altitude increase more gradually
+    
+            roll += Math.floor(Math.random() * 3);
+            yaw += Math.floor(Math.random() * 3);
+    
+            if (time === 20) {
+              flightState = 2; // Transition to Apogee
+            }
+            break;
+    
+          case 2: // Apogee (5 seconds)
+            acceleration = 0;
+            verticalVelocity = 0; // No velocity at apogee
+            altitude = maxAltitude; // Maximum altitude is reached
+    
+            if (time === 25) {
+              flightState = 3; // Transition to Drogue Descent
+            }
+            break;
+    
+          case 3: // Drogue Descent (8 seconds)
+            acceleration = -9.8; // Gravity acting downward
+            verticalVelocity -= 80; // Decelerating the rocket faster
+            altitude += verticalVelocity * 0.1; // Simulate descent
+    
+            if (time === 33) {
+              flightState = 4; // Transition to Main Parachute Descent
+            }
+            break;
+    
+          case 4: // Main Parachute Descent (10 seconds)
+            acceleration = -9.8; // Gravity acting downward
+            verticalVelocity = -20; // Slower descent due to parachute
+            altitude += verticalVelocity * 0.1; // Simulate controlled descent
+    
+            if (time === 43) {
+              flightState = 5; // Transition to Post Flight
+            }
+            break;
+    
+          case 5: // Post Flight (7 seconds)
+            acceleration = 0;
+            verticalVelocity = 0;
+            altitude = 0;
+            roll = 0;
+            yaw = 0;
+    
+            if (time === 50) {
+              clearInterval(interval);
+              setIsDemoRunning(false);
+            }
+            break;
+    
+          default:
+            break;
+        }
+    
+        // Update sensor data context
+        setSensorData((prev) => ({
+          ...prev,
+          altitude: Math.max(0, Math.floor(altitude)), // Altitude can't be negative
+          flightstate: flightState,
+          vertical_velocity: verticalVelocity,
+          acceleration,
+          roll,
+          yaw,
+          time,
+        }));
+      }, 1000); // Update every second
+    };
+    
+    
    const [statuses, setStatuses] = useState([
     { name: "Acceleration", status: "Awaiting" },
     { name: "Yaw > 60", status: "Awaiting" },
@@ -77,6 +178,15 @@ const StatusList = () => {
         <div className="text-xl font-bold">{currentStatus}</div>
         <div className="text-sm text-gray-200">Rocket Status</div>
       </div>
+
+      <button 
+  className="w-full p-4 rounded-lg text-center text-white shadow-lg mt-4 bg-teal-500 transition-transform transform hover:scale-105 focus:outline-none"
+  onClick={startDemo}
+  disabled={isDemoRunning}
+>
+  <div className="text-xl font-bold">{isDemoRunning ? "Demo Running..." : "Start Demo"}</div>
+</button>
+
     </div>
   );
 }

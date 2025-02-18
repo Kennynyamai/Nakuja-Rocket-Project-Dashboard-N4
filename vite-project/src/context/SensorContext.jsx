@@ -12,6 +12,7 @@ export const SensorProvider = ({ children }) => {
     roll: 0,
     yaw: 0,
     flightstate: 0,
+    time:0,
   });
 
 
