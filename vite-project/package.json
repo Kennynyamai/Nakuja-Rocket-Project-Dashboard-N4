@@ -1,6 +1,5 @@
 {
   "name": "vite-project",
-  "homepage": "https://Kennynyamai.github.io/Nakuja-Rocket-Project-Dashboard-N4/",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,9 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "preview": "vite preview"
   },
   "dependencies": {
     "gh-pages": "^6.3.0",
